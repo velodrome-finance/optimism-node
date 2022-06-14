@@ -1,0 +1,45 @@
+app = "velo-op-node-grafana"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+  image = "grafana/grafana:latest"
+
+[env]
+  GF_AUTH_ANONYMOUS_ENABLED="true"
+  GF_AUTH_ANONYMOUS_ORG_ROLE="Viewer"
+  GF_INSTALL_PLUGINS = "grafana-worldmap-panel,grafana-clock-panel"
+
+# Use this to create a volume:
+#   `flyctl volumes create -a <GRAFANA_APP_NAME> dtl_volume --region iad --size 1`
+[mounts]
+  source="grafana_volume"
+  destination="/var/lib/grafana"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+
+[[services]]
+  http_checks = []
+  internal_port = 3000
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+  [[services.ports]]
+    force_https = true
+    handlers = ["http"]
+    port = 80
+  [[services.ports]]
+    handlers = ["tls", "http"]
+    port = 443
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"

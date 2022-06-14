@@ -1,0 +1,60 @@
+app = "dtl"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+  image = "ethereumoptimism/data-transport-layer:latest"
+
+[env]
+  DATA_TRANSPORT_LAYER__L1_RPC_ENDPOINT="https://eth-mainnet.alchemyapi.io/v2/<KEY>"
+  DATA_TRANSPORT_LAYER__ADDRESS_MANAGER="0xdE1FCfB0851916CA5101820A69b13a4E276bd81F"
+  DATA_TRANSPORT_LAYER__SYNC_FROM_L1="true"
+  DATA_TRANSPORT_LAYER__SYNC_FROM_L2="false"
+  DATA_TRANSPORT_LAYER__L1_START_HEIGHT=13596466
+  DATA_TRANSPORT_LAYER__CONFIRMATIONS=12
+  DATA_TRANSPORT_LAYER__DANGEROUSLY_CATCH_ALL_ERRORS="true"
+  DATA_TRANSPORT_LAYER__DB_PATH="/db"
+  DATA_TRANSPORT_LAYER__DEFAULT_BACKEND="l1"
+  DATA_TRANSPORT_LAYER__L1_GAS_PRICE_BACKEND="l1"
+  DATA_TRANSPORT_LAYER__ENABLE_METRICS="true"
+  DATA_TRANSPORT_LAYER__ETH_NETWORK_NAME="mainnet"
+  DATA_TRANSPORT_LAYER__L2_CHAIN_ID=10
+  DATA_TRANSPORT_LAYER__LOGS_PER_POLLING_INTERVAL=2000
+  DATA_TRANSPORT_LAYER__NODE_ENV="production"
+  DATA_TRANSPORT_LAYER__POLLING_INTERVAL=500
+  DATA_TRANSPORT_LAYER__SENTRY_TRACE_RATE=0.05
+  DATA_TRANSPORT_LAYER__SERVER_HOSTNAME="::"
+  DATA_TRANSPORT_LAYER__SERVER_PORT=7878
+  DATA_TRANSPORT_LAYER__TRANSACTIONS_PER_POLLING_INTERVAL=1000
+
+# Use this to create a volume:
+#   `flyctl volumes create -a dtl dtl_volume --region iad --size 20`
+[mounts]
+  source="dtl_volume"
+  destination="/db"
+
+[metrics]
+  port = 7878
+  path = "/metrics"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+  private_network = true
+
+[[services]]
+  http_checks = []
+  internal_port = 7878
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"

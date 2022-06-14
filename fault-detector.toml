@@ -1,0 +1,36 @@
+app = "fault-detector"
+kill_signal = "SIGINT"
+kill_timeout = 5
+processes = []
+
+[build]
+  image = "ethereumoptimism/fault-detector:latest"
+
+[env]
+  FAULT_DETECTOR__L2_RPC_PROVIDER="http://l2geth.internal:8545"
+  FAULT_DETECTOR__L1_RPC_PROVIDER="https://eth-mainnet.alchemyapi.io/v2/<KEY>"
+
+[metrics]
+  port = 7300
+  path = "/metrics"
+
+[experimental]
+  allowed_public_ports = []
+  auto_rollback = true
+  private_network = true
+
+[[services]]
+  http_checks = []
+  internal_port = 7300
+  processes = ["app"]
+  protocol = "tcp"
+  script_checks = []
+  [services.concurrency]
+    hard_limit = 25
+    soft_limit = 20
+    type = "connections"
+  [[services.tcp_checks]]
+    grace_period = "1s"
+    interval = "15s"
+    restart_limit = 0
+    timeout = "2s"
